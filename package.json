@@ -12,6 +12,7 @@
     "declaration": "rm -rf declaration && tsc -p tsconfig.declaration.json",
     "doc": "rm -rf ./doc && jsdoc -c jsdoc.json",
     "prerelease": "npm run build && prerelease --dirs=dist,doc",
+    "deploy": "gh-pages -d ./demo --dest=./ --add --remote origin",
     "release": "npm run build && npm run doc && release --dirs=dist,doc",
     "release:init": "npm run build && npm run doc && release -i --dirs=dist,doc"
   },
