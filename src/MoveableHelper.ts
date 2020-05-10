@@ -2,13 +2,23 @@ import { Frame } from "scenejs";
 import {
     OnDragStart, OnDrag, OnRender, OnResize, OnResizeStart,
     OnScaleStart, OnScale, OnRotate, OnRotateStart,
-    OnDragGroupStart, OnDragGroup
+    OnDragGroupStart, OnDragGroup, OnResizeGroupStart,
+    OnResizeGroup, OnScaleGroupStart, OnScaleGroup, OnRotateGroupStart, OnRotateGroup
 } from "react-moveable";
 
 
 export default class MoveableHelper {
-    public createAuto = true;
-    public useRender = false;
+    public static create(options: Partial<MoveableHelperOptions> ) {
+        return new MoveableHelper(options);
+    }
+    public options: Partial<MoveableHelperOptions>;
+    constructor(options: Partial<MoveableHelperOptions> = {}) {
+        this.options = {
+            useRender: false,
+            createAuto: true,
+            ...options,
+        };
+    }
     public map = new Map<HTMLElement | SVGElement, Frame>();
     public getFrame(el: HTMLElement | SVGElement) {
         return this.map.get(el);
@@ -37,9 +47,7 @@ export default class MoveableHelper {
     }
     public onDrag = (e: OnDrag) => {
         this.testDrag(e);
-        if (!this.useRender) {
-            this.render(e.target);
-        }
+        this.testRender(e.target);
     }
     public onDragGroupStart = (e: OnDragGroupStart) => {
         e.events.forEach(ev => {
@@ -52,12 +60,23 @@ export default class MoveableHelper {
         });
     }
     public onResizeStart = (e: OnResizeStart) => {
-        e.dragStart && this.onDragStart(e);
+        e.dragStart && this.onDragStart(e.dragStart);
         e.setOrigin(["%", "%"]);
     }
     public onResize = (e: OnResize) => {
         this.testResize(e);
         this.testRender(e.target);
+    }
+    public onResizeGroupStart = (e: OnResizeGroupStart) => {
+        e.events.forEach(ev => {
+            this.onResizeStart(ev);
+        });
+    }
+    public onResizeGroup = (e: OnResizeGroup) => {
+        console.log(e.offsetWidth / e.offsetHeight);
+        e.events.forEach(ev => {
+            this.onResize(ev);
+        });
     }
     public onScaleStart = (e: OnScaleStart) => {
         const frame = this.testFrame(e);
@@ -74,6 +93,16 @@ export default class MoveableHelper {
         this.testScale(e);
         this.testRender(e.target);
     }
+    public onScaleGroupStart = (e: OnScaleGroupStart) => {
+        e.events.forEach(ev => {
+            this.onScaleStart(ev);
+        });
+    }
+    public onScaleGroup = (e: OnScaleGroup) => {
+        e.events.forEach(ev => {
+            this.onScale(ev);
+        });
+    }
     public onRotateStart = (e: OnRotateStart) => {
         const frame = this.testFrame(e);
 
@@ -88,6 +117,16 @@ export default class MoveableHelper {
     public onRotate = (e: OnRotate) => {
         this.testRotate(e);
         this.testRender(e.target);
+    }
+    public onRotateGroupStart = (e: OnRotateGroupStart) => {
+        e.events.forEach(ev => {
+            this.onRotateStart(ev);
+        });
+    }
+    public onRotateGroup = (e: OnRotateGroup) => {
+        e.events.forEach(ev => {
+            this.onRotate(ev);
+        });
     }
     public onRender = (e: OnRender) => {
         const target = e.target;
@@ -106,7 +145,7 @@ export default class MoveableHelper {
         if (frame) {
             return frame;
         }
-        if (!this.createAuto) {
+        if (!this.options.createAuto) {
             if (e.stop) {
                 e.stop();
                 return;
@@ -155,6 +194,7 @@ export default class MoveableHelper {
 
         frame.set("width", `${e.width}px`);
         frame.set("height", `${e.height}px`);
+
         this.testDrag(e.drag);
     }
     private testScale(e: OnScale) {
@@ -172,7 +212,7 @@ export default class MoveableHelper {
         frame.set("transform", "rotate", `${rotate}deg`);
     }
     private testRender(target, frame = this.getFrame(target)) {
-        if (!this.useRender) {
+        if (!this.options.useRender) {
             this.render(target, frame);
         }
     }
