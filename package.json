@@ -1,0 +1,42 @@
+{
+  "name": "moveable-helper",
+  "version": "0.0.1",
+  "description": "Moveable Helper",
+  "main": "./dist/moveable-helper.cjs.js",
+  "module": "./dist/moveable-helper.esm.js",
+  "sideEffects": false,
+  "types": "declaration/index.d.ts",
+  "scripts": {
+    "start": "rollup -c -w",
+    "build": "rollup -c && npm run declaration && print-sizes ./dist",
+    "declaration": "rm -rf declaration && tsc -p tsconfig.declaration.json",
+    "doc": "rm -rf ./doc && jsdoc -c jsdoc.json",
+    "prerelease": "npm run build && prerelease --dirs=dist,doc",
+    "release": "npm run build && npm run doc && release --dirs=dist,doc",
+    "release:init": "npm run build && npm run doc && release -i --dirs=dist,doc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/daybrush/moveable-helper.git"
+  },
+  "author": "Daybrush",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/daybrush/moveable-helper/issues"
+  },
+  "homepage": "https://github.com/daybrush/moveable-helper#readme",
+  "dependencies": {
+    "@daybrush/utils": "^0.10.3",
+    "scenejs": "^1.1.6"
+  },
+  "devDependencies": {
+    "@daybrush/builder": "^0.1.2",
+    "@daybrush/jsdoc": "^0.3.7",
+    "@daybrush/release": "^0.2.4",
+    "daybrush-jsdoc-template": "^1.6.0",
+    "print-sizes": "^0.1.0",
+    "react-moveable": "^0.20.6",
+    "tslint": "^6.1.2",
+    "typescript": "^3.8.3"
+  }
+}
