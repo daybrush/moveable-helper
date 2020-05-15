@@ -1,6 +1,6 @@
 {
   "name": "moveable-helper",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Moveable Helper",
   "main": "./dist/moveable-helper.cjs.js",
   "module": "./dist/moveable-helper.esm.js",

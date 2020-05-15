@@ -1,5 +1,5 @@
 
-interface MoveableHelperOptions {
+export interface MoveableHelperOptions {
     useRender: boolean;
     createAuto: boolean;
 }

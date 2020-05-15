@@ -5,6 +5,7 @@ import {
     OnDragGroupStart, OnDragGroup, OnResizeGroupStart,
     OnResizeGroup, OnScaleGroupStart, OnScaleGroup, OnRotateGroupStart, OnRotateGroup
 } from "react-moveable";
+import { MoveableHelperOptions } from "./types";
 
 
 export default class MoveableHelper {
