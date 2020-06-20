@@ -3,9 +3,10 @@ import {
     OnDragStart, OnDrag, OnRender, OnResize, OnResizeStart,
     OnScaleStart, OnScale, OnRotate, OnRotateStart,
     OnDragGroupStart, OnDragGroup, OnResizeGroupStart,
-    OnResizeGroup, OnScaleGroupStart, OnScaleGroup, OnRotateGroupStart, OnRotateGroup
+    OnResizeGroup, OnScaleGroupStart, OnScaleGroup, OnRotateGroupStart, OnRotateGroup, OnWarp, OnWarpStart
 } from "react-moveable";
 import { MoveableHelperOptions } from "./types";
+import { isString } from "@daybrush/utils";
 
 
 export default class MoveableHelper {
@@ -30,6 +31,7 @@ export default class MoveableHelper {
                 translate: "0px, 0px",
                 rotate: "0deg",
                 scale: "1, 1",
+                matrix3d: "1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1",
             },
         })
 
@@ -37,6 +39,19 @@ export default class MoveableHelper {
 
         this.map.set(el, frame);
         return frame;
+    }
+    public setElements(selector: { [key: number]: HTMLElement | SVGElement, length: number } | string) {
+        const elements = isString(selector) ? document.querySelectorAll<HTMLElement | SVGElement>(selector) : selector;
+        const length = elements.length;
+        const map = this.map;
+
+        for (let i = 0; i < length; ++i) {
+            const el = elements[i];
+            if (map.has(el)) {
+                continue;
+            }
+            this.createFrame(el);
+        }
     }
     public onDragStart = (e: OnDragStart) => {
         const frame = this.testFrame(e);
@@ -128,6 +143,29 @@ export default class MoveableHelper {
         e.events.forEach(ev => {
             this.onRotate(ev);
         });
+    }
+    public onClip = (e: any) => {
+        const frame = this.testFrame(e);
+        if (e.clipType === "rect") {
+            frame.set("clip", e.clipStyle);
+        } else {
+            frame.set("clip-path", e.clipStyle);
+        }
+        this.testRender(e.target);
+    }
+    public onWarpStart = (e: OnWarpStart) => {
+        const frame = this.testFrame(e);
+
+        if (!frame) {
+            return false;
+        }
+        e.set(frame.get("transform", "matrix3d").split(",").map(v => parseFloat(v)));
+    }
+    public onWarp = (e: OnWarp) => {
+        const frame = this.testFrame(e);
+
+        frame.set("transform", "matrix3d", e.matrix.join(", "));
+        this.testRender(e.target);
     }
     public onRender = (e: OnRender) => {
         const target = e.target;
