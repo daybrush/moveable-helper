@@ -3,7 +3,8 @@ import {
     OnDragStart, OnDrag, OnRender, OnResize, OnResizeStart,
     OnScaleStart, OnScale, OnRotate, OnRotateStart,
     OnDragGroupStart, OnDragGroup, OnResizeGroupStart,
-    OnResizeGroup, OnScaleGroupStart, OnScaleGroup, OnRotateGroupStart, OnRotateGroup, OnWarp, OnWarpStart
+    OnResizeGroup, OnScaleGroupStart, OnScaleGroup,
+    OnRotateGroupStart, OnRotateGroup, OnWarp, OnWarpStart, OnClip, OnDragOriginStart, OnDragOrigin, OnRound
 } from "react-moveable";
 import { MoveableHelperOptions } from "./types";
 import { isString } from "@daybrush/utils";
@@ -22,9 +23,19 @@ export default class MoveableHelper {
         };
     }
     public map = new Map<HTMLElement | SVGElement, Frame>();
+    public render(target: HTMLElement | SVGElement, frame: Frame = this.getFrame(target)) {
+        target.style.cssText += frame.toCSS();
+    }
     public getFrame(el: HTMLElement | SVGElement) {
         return this.map.get(el);
     }
+    public setFrame(el: HTMLElement | SVGElement, frame: Frame) {
+        return this.map.set(el, frame);
+    }
+    public removeFrame(el: HTMLElement | SVGElement) {
+        this.map.delete(el);
+    }
+
     public createFrame(el: HTMLElement | SVGElement, properites = {}) {
         const frame = new Frame({
             transform: {
@@ -144,7 +155,7 @@ export default class MoveableHelper {
             this.onRotate(ev);
         });
     }
-    public onClip = (e: any) => {
+    public onClip = (e: OnClip) => {
         const frame = this.testFrame(e);
         if (e.clipType === "rect") {
             frame.set("clip", e.clipStyle);
@@ -152,6 +163,20 @@ export default class MoveableHelper {
             frame.set("clip-path", e.clipStyle);
         }
         this.testRender(e.target);
+    }
+    public onDragOrignStart = (e: OnDragOriginStart) => {
+        e.dragStart && this.onDragStart(e.dragStart);
+    }
+    public onDragOrigin = (e: OnDragOrigin) => {
+        const frame = this.testFrame(e);
+
+        frame.set("transform-origin", e.origin.map(v => `${v}px`).join(" "));
+        this.testDrag(e.drag);
+    }
+    public onRound = (e: OnRound) => {
+        const frame = this.testFrame(e);
+
+        frame.set("border-radius", e.borderRadius);
     }
     public onWarpStart = (e: OnWarpStart) => {
         const frame = this.testFrame(e);
@@ -254,8 +279,5 @@ export default class MoveableHelper {
         if (!this.options.useRender) {
             this.render(target, frame);
         }
-    }
-    private render(target: HTMLElement | SVGElement, frame: Frame = this.getFrame(target)) {
-        target.style.cssText += frame.toCSS();
     }
 }
