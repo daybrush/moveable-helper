@@ -164,7 +164,7 @@ export default class MoveableHelper {
         }
         this.testRender(e.target);
     }
-    public onDragOrignStart = (e: OnDragOriginStart) => {
+    public onDragOriginStart = (e: OnDragOriginStart) => {
         e.dragStart && this.onDragStart(e.dragStart);
     }
     public onDragOrigin = (e: OnDragOrigin) => {
