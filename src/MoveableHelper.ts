@@ -170,7 +170,7 @@ export default class MoveableHelper {
     public onDragOrigin = (e: OnDragOrigin) => {
         const frame = this.testFrame(e);
 
-        frame.set("transform-origin", e.origin.map(v => `${v}px`).join(" "));
+        frame.set("transform-origin", e.transformOrigin);
         this.testDrag(e.drag);
     }
     public onRound = (e: OnRound) => {
