@@ -1,6 +1,6 @@
 {
   "name": "moveable-helper",
-  "version": "0.1.0",
+  "version": "0.2.0-beta4",
   "description": "Moveable Helper",
   "main": "./dist/moveable-helper.cjs.js",
   "module": "./dist/moveable-helper.esm.js",
@@ -36,7 +36,7 @@
     "@daybrush/release": "^0.2.4",
     "daybrush-jsdoc-template": "^1.6.0",
     "print-sizes": "^0.1.0",
-    "react-moveable": "^0.20.6",
+    "react-moveable": "^0.21.0-beta7",
     "tslint": "^6.1.2",
     "typescript": "^3.8.3"
   }

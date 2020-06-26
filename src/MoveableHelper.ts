@@ -172,11 +172,13 @@ export default class MoveableHelper {
 
         frame.set("transform-origin", e.transformOrigin);
         this.testDrag(e.drag);
+        this.testRender(e.target);
     }
     public onRound = (e: OnRound) => {
         const frame = this.testFrame(e);
 
         frame.set("border-radius", e.borderRadius);
+        this.testRender(e.target);
     }
     public onWarpStart = (e: OnWarpStart) => {
         const frame = this.testFrame(e);
