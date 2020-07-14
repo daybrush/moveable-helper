@@ -4,8 +4,9 @@ import {
     OnScaleStart, OnScale, OnRotate, OnRotateStart,
     OnDragGroupStart, OnDragGroup, OnResizeGroupStart,
     OnResizeGroup, OnScaleGroupStart, OnScaleGroup,
-    OnRotateGroupStart, OnRotateGroup, OnWarp, OnWarpStart, OnClip, OnDragOriginStart, OnDragOrigin, OnRound
-} from "react-moveable";
+    OnRotateGroupStart, OnRotateGroup, OnWarp, OnWarpStart,
+    OnClip, OnDragOriginStart, OnDragOrigin, OnRound
+} from "react-moveable/declaration/types";
 import { MoveableHelperOptions } from "./types";
 import { isString } from "@daybrush/utils";
 
@@ -26,6 +27,15 @@ export default class MoveableHelper {
     public render(target: HTMLElement | SVGElement, frame: Frame = this.getFrame(target)) {
         target.style.cssText += frame.toCSS();
     }
+    public clear() {
+        this.map.clear();
+    }
+    public getTargets() {
+        return this.map.keys();
+    }
+    public getFrames() {
+        return this.map.values();
+    }
     public getFrame(el: HTMLElement | SVGElement) {
         return this.map.get(el);
     }
@@ -42,7 +52,6 @@ export default class MoveableHelper {
                 translate: "0px, 0px",
                 rotate: "0deg",
                 scale: "1, 1",
-                matrix3d: "1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1",
             },
         })
 
@@ -186,7 +195,11 @@ export default class MoveableHelper {
         if (!frame) {
             return false;
         }
-        e.set(frame.get("transform", "matrix3d").split(",").map(v => parseFloat(v)));
+        const matrix3d = frame.get("transform", "matrix3d");
+
+        if (matrix3d) {
+            e.set(matrix3d.split(",").map(v => parseFloat(v)))
+        }
     }
     public onWarp = (e: OnWarp) => {
         const frame = this.testFrame(e);
