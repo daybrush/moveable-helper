@@ -5,10 +5,12 @@ import {
     OnDragGroupStart, OnDragGroup, OnResizeGroupStart,
     OnResizeGroup, OnScaleGroupStart, OnScaleGroup,
     OnRotateGroupStart, OnRotateGroup, OnWarp, OnWarpStart,
-    OnClip, OnDragOriginStart, OnDragOrigin, OnRound
+    OnClip, OnDragOriginStart, OnDragOrigin, OnRound, OnBeforeRenderStart,
+    OnTransformStartEvent, OnBeforeRenderGroupStart
 } from "react-moveable/declaration/types";
 import { MoveableHelperOptions } from "./types";
 import { isString } from "@daybrush/utils";
+import { getOrderIndex } from "./utils";
 
 
 export default class MoveableHelper {
@@ -18,6 +20,7 @@ export default class MoveableHelper {
     public options: Partial<MoveableHelperOptions>;
     constructor(options: Partial<MoveableHelperOptions> = {}) {
         this.options = {
+            useBeforeRender: false,
             useRender: false,
             createAuto: true,
             ...options,
@@ -73,13 +76,23 @@ export default class MoveableHelper {
             this.createFrame(el);
         }
     }
+    public onBeforeRenderStart = (e: OnBeforeRenderStart) => {
+        const frame = this.testFrame(e);
+
+        e.setTransform(frame.toCSSObject().transform || "");
+    }
+    public onBeforeRenderGroupStart = (e: OnBeforeRenderGroupStart) => {
+        e.events.forEach(ev => {
+            this.onBeforeRenderStart(ev);
+        });
+    }
     public onDragStart = (e: OnDragStart) => {
         const frame = this.testFrame(e);
 
         if (!frame) {
             return false;
         }
-        e.set(this.getTranslate(frame));
+        this.setTranasform(e, frame, "translate");
     }
     public onDrag = (e: OnDrag) => {
         this.testDrag(e);
@@ -109,7 +122,6 @@ export default class MoveableHelper {
         });
     }
     public onResizeGroup = (e: OnResizeGroup) => {
-        console.log(e.offsetWidth / e.offsetHeight);
         e.events.forEach(ev => {
             this.onResize(ev);
         });
@@ -120,9 +132,8 @@ export default class MoveableHelper {
         if (!frame) {
             return false;
         }
-        const scale = frame.get("transform", "scale").split(",").map(value => parseFloat(value));
 
-        e.set(scale);
+        this.setTranasform(e, frame, "scale");
         e.dragStart && this.onDragStart(e.dragStart);
     }
     public onScale = (e: OnScale) => {
@@ -145,10 +156,9 @@ export default class MoveableHelper {
         if (!frame) {
             return false;
         }
-        const rotate = parseFloat(frame.get("transform", "rotate")) || 0;
 
-        e.set(rotate);
-        (e as any).dragStart && this.onDragStart((e as any).dragStart);
+        this.setTranasform(e, frame, "rotate");
+        e.dragStart && this.onDragStart(e.dragStart);
     }
     public onRotate = (e: OnRotate) => {
         this.testRotate(e);
@@ -195,11 +205,7 @@ export default class MoveableHelper {
         if (!frame) {
             return false;
         }
-        const matrix3d = frame.get("transform", "matrix3d");
-
-        if (matrix3d) {
-            e.set(matrix3d.split(",").map(v => parseFloat(v)))
-        }
+        this.setTranasform(e, frame, "matrix3d");
     }
     public onWarp = (e: OnWarp) => {
         const frame = this.testFrame(e);
@@ -232,33 +238,13 @@ export default class MoveableHelper {
         }
         return this.createFrame(target);
     }
-    private getTranslate(frame: Frame) {
-        return this.testTranslate(frame).map(value => parseFloat(value) || 0);
-    }
-    private testTranslate(frame: Frame) {
-        const translate = frame.get("transform", "translate");
-
-        if (translate) {
-            return translate.split(",");
-        }
-        const translateX = frame.get("transform", "translateX");
-
-        if (translateX) {
-            const translateY = frame.get("transform", "translateY");
-
-            return [translateX, translateY];
-        }
-
-        frame.set("transform", "translate", "0px,0px");
-        return ["0px", "0px"];
-    }
     private testDrag(e: OnDrag) {
         const target = e.target;
-        const beforeTranslate = e.beforeTranslate;
+        const translate = e.translate;
 
         const frame = this.getFrame(target);
-        const tx = `${beforeTranslate[0]}px`;
-        const ty = `${beforeTranslate[1]}px`;
+        const tx = `${translate[0]}px`;
+        const ty = `${translate[1]}px`;
 
         if (frame.has("transform", "translate")) {
             frame.set("transform", "translate", `${tx},${ty}`);
@@ -285,14 +271,22 @@ export default class MoveableHelper {
     }
     private testRotate(e: OnRotate) {
         const frame = this.testFrame(e);
-        const rotate = e.beforeRotate;
+        const rotate = e.rotate;
 
-        (e as any).drag && this.testDrag((e as any).drag);
+        this.testDrag(e.drag);
         frame.set("transform", "rotate", `${rotate}deg`);
     }
     private testRender(target, frame = this.getFrame(target)) {
         if (!this.options.useRender) {
             this.render(target, frame);
+        }
+    }
+    private setTranasform(e: OnTransformStartEvent, frame: Frame, functionName: string) {
+        const orderIndex = getOrderIndex(frame, functionName);
+        if (this.options.useBeforeRender) {
+            e.setTransformIndex(orderIndex);
+        } else {
+            e.setTransform(frame.toCSSObject().transform || [], orderIndex);
         }
     }
 }
